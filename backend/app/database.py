@@ -2,6 +2,7 @@ from pymongo import MongoClient
 from pymongo.server_api import ServerApi
 import os
 from dotenv import load_dotenv
+import certifi
 
 # Load environment variables
 load_dotenv()
@@ -21,13 +22,12 @@ if MONGODB_URL and "placeholder" not in MONGODB_URL.lower():
     try:
         if "mongodb+srv" in MONGODB_URL:
             # MongoDB Atlas connection with stable API
-            # Use tlsAllowInvalidCertificates for Vercel serverless compatibility
+            # Use certifi CA bundle for SSL verification in Vercel
             client = MongoClient(
                 MONGODB_URL,
                 server_api=ServerApi('1'),
-                tls=True,
-                tlsAllowInvalidCertificates=True,
-                serverSelectionTimeoutMS=5000
+                tlsCAFile=certifi.where(),
+                serverSelectionTimeoutMS=10000
             )
         else:
             # Local MongoDB connection
