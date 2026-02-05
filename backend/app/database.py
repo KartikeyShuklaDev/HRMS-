@@ -14,6 +14,7 @@ client = None
 db = None
 employee_collection = None
 attendance_collection = None
+connection_error = None  # Store the error for debugging
 
 # Configure MongoDB client with server API for Atlas
 if MONGODB_URL and "placeholder" not in MONGODB_URL.lower():
@@ -48,7 +49,9 @@ if MONGODB_URL and "placeholder" not in MONGODB_URL.lower():
             print(f"Note: Indexes may already exist - {e}")
             
     except Exception as e:
+        connection_error = str(e)  # Store error for debugging
         print(f"✗ MongoDB connection error: {e}")
+        print(f"✗ Error type: {type(e).__name__}")
         print("⚠ Running without database - API will return demo data")
 else:
     print("⚠ No MongoDB URL configured - Running without database")

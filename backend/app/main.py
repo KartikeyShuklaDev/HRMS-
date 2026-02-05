@@ -30,7 +30,7 @@ def root():
 
 @app.get("/debug/db-status")
 def debug_db_status():
-    from app.database import employee_collection, attendance_collection, MONGODB_URL
+    from app.database import employee_collection, attendance_collection, MONGODB_URL, connection_error
     return {
         "mongodb_url_set": MONGODB_URL is not None and MONGODB_URL != "",
         "mongodb_url_length": len(MONGODB_URL) if MONGODB_URL else 0,
@@ -38,5 +38,6 @@ def debug_db_status():
         "has_placeholder": "placeholder" in MONGODB_URL.lower() if MONGODB_URL else False,
         "employee_collection_connected": employee_collection is not None,
         "attendance_collection_connected": attendance_collection is not None,
-        "env_var_exists": "MONGODB_URL" in os.environ
+        "env_var_exists": "MONGODB_URL" in os.environ,
+        "connection_error": connection_error
     }
