@@ -1,11 +1,10 @@
 import sys
-from pathlib import Path
+import os
 
 # Add backend directory to Python path
-backend_path = Path(__file__).parent.parent / "backend"
-sys.path.insert(0, str(backend_path))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'backend'))
 
 from app.main import app
 
-# This is the Vercel handler
-handler = app
+# Vercel serverless function handler
+app = app
