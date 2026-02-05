@@ -10,10 +10,6 @@ def mark_attendance(attendance: AttendanceCreate):
     if attendance_collection is None or employee_collection is None:
         raise HTTPException(status_code=503, detail="Database not available. Please configure MongoDB connection.")
     
-    # Check if date is not in the future
-    if not AttendanceUpdate.validate_date_not_future(attendance.date):
-        raise HTTPException(status_code=400, detail="Cannot mark attendance for future dates")
-    
     if not employee_collection.find_one({"employee_id": attendance.employee_id}):
         raise HTTPException(status_code=404, detail="Employee not found")
 
@@ -37,15 +33,17 @@ def mark_attendance(attendance: AttendanceCreate):
 @router.put("/{employee_id}/{date}")
 def update_attendance(employee_id: str, date: str, attendance: AttendanceUpdate):
     """Update attendance for a specific employee and date (only past and current dates)"""
+    if attendance_collection is None or employee_collection is None:
+        raise HTTPException(status_code=503, detail="Database not available. Please configure MongoDB connection.")
+    
     try:
         # Parse the date
         attendance_date = date_class.fromisoformat(date)
+        # Check if date is not in the future
+        if attendance_date > date_class.today():
+            raise HTTPException(status_code=400, detail="Cannot edit attendance for future dates")
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid date format. Use YYYY-MM-DD")
-    
-    # Check if date is not in the future
-    if not AttendanceUpdate.validate_date_not_future(attendance_date):
-        raise HTTPException(status_code=400, detail="Cannot edit attendance for future dates")
     
     # Check if employee exists
     if not employee_collection.find_one({"employee_id": employee_id}):
@@ -71,6 +69,9 @@ def get_attendance(
     employee_id: str,
     date: str | None = Query(default=None)
 ):
+    if attendance_collection is None or employee_collection is None:
+        raise HTTPException(status_code=503, detail="Database not available. Please configure MongoDB connection.")
+    
     if not employee_collection.find_one({"employee_id": employee_id}):
         raise HTTPException(status_code=404, detail="Employee not found")
 
