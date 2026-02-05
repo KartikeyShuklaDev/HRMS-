@@ -21,10 +21,12 @@ if MONGODB_URL and "placeholder" not in MONGODB_URL.lower():
     try:
         if "mongodb+srv" in MONGODB_URL:
             # MongoDB Atlas connection with stable API
+            # Use tlsAllowInvalidCertificates for Vercel serverless compatibility
             client = MongoClient(
                 MONGODB_URL,
                 server_api=ServerApi('1'),
-                tlsAllowInvalidCertificates=False,
+                tls=True,
+                tlsAllowInvalidCertificates=True,
                 serverSelectionTimeoutMS=5000
             )
         else:
