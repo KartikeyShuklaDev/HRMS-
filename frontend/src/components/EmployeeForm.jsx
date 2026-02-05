@@ -88,7 +88,17 @@ function EmployeeForm({ onEmployeeAdded }) {
       alert('Employee added successfully!');
       if (onEmployeeAdded) onEmployeeAdded();
     } catch (err) {
-      const errorMsg = err.response?.data?.detail || 'Failed to add employee';
+      console.error('Error adding employee:', err);
+      let errorMsg = 'Failed to add employee';
+      
+      if (err.response?.data?.detail) {
+        errorMsg = err.response.data.detail;
+      } else if (err.response?.status === 503) {
+        errorMsg = 'Database not available. The app is running in demo mode. Please configure MongoDB to save employees.';
+      } else if (err.message) {
+        errorMsg = err.message;
+      }
+      
       setError(errorMsg);
       alert(errorMsg);
     } finally {

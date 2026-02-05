@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import EmployeeForm from '../components/EmployeeForm';
 import EmployeeList from '../components/EmployeeList';
+import DatabaseStatus from '../components/DatabaseStatus';
 
 function Employees() {
   const [refreshCounter, setRefreshCounter] = useState(0);
@@ -14,6 +15,7 @@ function Employees() {
   return (
     <section className="section">
       <h2>Employee Management</h2>
+      <DatabaseStatus />
       
       <div style={{ marginTop: '20px', textAlign: 'center', display: 'flex', gap: '15px', justifyContent: 'center', flexWrap: 'wrap' }}>
         <button 
