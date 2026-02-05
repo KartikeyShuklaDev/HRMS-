@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException
-from app.database import employee_collection, attendance_collection
+from app.database import employee_collection, attendance_collection, db
 from datetime import datetime, timedelta
 
 router = APIRouter(prefix="/dashboard", tags=["Dashboard"])
@@ -7,6 +7,21 @@ router = APIRouter(prefix="/dashboard", tags=["Dashboard"])
 @router.get("/stats")
 def get_dashboard_stats():
     """Get dashboard statistics"""
+    if employee_collection is None or attendance_collection is None:
+        # Return demo data when database is not available
+        return {
+            "total_employees": 2,
+            "total_attendance_records": 10,
+            "total_present": 8,
+            "total_absent": 2,
+            "present_today": 2,
+            "absent_today": 0,
+            "attendance_rate": 80.0,
+            "present_this_month": 8,
+            "absent_this_month": 2,
+            "message": "Demo data - Database not connected"
+        }
+    
     try:
         # Total employees
         total_employees = employee_collection.count_documents({})

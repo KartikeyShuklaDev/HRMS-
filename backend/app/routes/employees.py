@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException
-from app.database import employee_collection
+from app.database import employee_collection, db
 from app.schemas import EmployeeCreate
 import random
 import string
@@ -40,8 +40,8 @@ def generate_unique_employee_id(full_name: str) -> str:
         random_suffix = ''.join(random.choices(string.digits, k=4))
         employee_id = f"{prefix}{random_suffix}"
         
-        # Check if ID already exists
-        if not employee_collection.find_one({"employee_id": employee_id}):
+        # Check if ID already exists (only if database is connected)
+        if employee_collection is None or not employee_collection.find_one({"employee_id": employee_id}):
             return employee_id
     
     # If still not unique after max attempts, add extra random characters
@@ -65,6 +65,9 @@ def get_departments():
 
 @router.post("/")
 def add_employee(employee: EmployeeCreate):
+    if employee_collection is None:
+        raise HTTPException(status_code=503, detail="Database not available. Please configure MongoDB connection.")
+    
     # Validate phone number format
     if not EmployeeCreate.validate_phone(employee.phone):
         raise HTTPException(status_code=400, detail="Phone number must be exactly 10 digits")
@@ -90,11 +93,37 @@ def add_employee(employee: EmployeeCreate):
 
 @router.get("/")
 def get_employees():
+    if employee_collection is None:
+        # Return demo data when database is not available
+        return [
+            {
+                "employee_id": "DEMO0001",
+                "full_name": "John Doe",
+                "email": "john.doe@example.com",
+                "phone": "1234567890",
+                "department": "Engineering",
+                "designation": "Software Engineer",
+                "hire_date": "2024-01-15"
+            },
+            {
+                "employee_id": "DEMO0002",
+                "full_name": "Jane Smith",
+                "email": "jane.smith@example.com",
+                "phone": "0987654321",
+                "department": "Human Resources",
+                "designation": "HR Manager",
+                "hire_date": "2023-06-20"
+            }
+        ]
+    
     employees = list(employee_collection.find({}, {"_id": 0}))
     return employees
 
 @router.delete("/{employee_id}")
 def delete_employee(employee_id: str):
+    if employee_collection is None:
+        raise HTTPException(status_code=503, detail="Database not available. Please configure MongoDB connection.")
+    
     result = employee_collection.delete_one({"employee_id": employee_id})
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Employee not found")

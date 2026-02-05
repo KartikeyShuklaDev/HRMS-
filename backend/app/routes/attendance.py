@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, Query
-from app.database import attendance_collection, employee_collection
+from app.database import attendance_collection, employee_collection, db
 from app.schemas import AttendanceCreate, AttendanceUpdate
 from datetime import date as date_class
 
@@ -7,6 +7,9 @@ router = APIRouter(prefix="/attendance", tags=["Attendance"])
 
 @router.post("/")
 def mark_attendance(attendance: AttendanceCreate):
+    if attendance_collection is None or employee_collection is None:
+        raise HTTPException(status_code=503, detail="Database not available. Please configure MongoDB connection.")
+    
     # Check if date is not in the future
     if not AttendanceUpdate.validate_date_not_future(attendance.date):
         raise HTTPException(status_code=400, detail="Cannot mark attendance for future dates")
